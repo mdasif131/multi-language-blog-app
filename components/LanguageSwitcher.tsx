@@ -1,38 +1,81 @@
-"use client";
+"use client"
 
-import { usePathname, useRouter } from "next/navigation";
+import { Check, ChevronDown } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
+import { Button } from "./ui/button"
+import Image from "next/image"
 
+const languages = [
+  { value: "en", label: "English", country: "us" },
+  { value: "bn", label: "বাংলা", country: "bd" },
+  { value: "hi", label: "हिन्दी", country: "in" },
+  { value: "ar", label: "العربية", country: "sa" },
+  { value: "ja", label: "日本語", country: "jp" },
+  { value: "ko", label: "한국어", country: "kr" },
+  { value: "en-SG", label: "English (SG)", country: "sg" },
+]
+
+function Flag({ country }: { country: string }) {
+  return (
+    <Image
+      src={`https://flagcdn.com/w80/${country}.png`}
+      width={20}
+      height={15}
+      alt=""
+      className="h-3.75 w-5 rounded-[2px] object-cover"
+    />
+  )
+}
 export default function LanguageSwitcher() {
-  const router = useRouter();
-  const pathname = usePathname();
+  const router = useRouter()
+  const pathname = usePathname()
 
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLocale = e.target.value;
- 
-    const segments = pathname.split("/");
-    segments[1] = newLocale;
-    const newPathname = segments.join("/");
+  const currentLocale = pathname.split("/")[1] || "en"
+  const currentLanguage =
+    languages.find((l) => l.value === currentLocale) ?? languages[0]
 
-    router.push(newPathname);
-  };
+  const handleLanguageChange = (newLocale: string) => {
+    if (newLocale === currentLocale) return
+    const segments = pathname.split("/")
+    segments[1] = newLocale
+    router.push(segments.join("/"))
+  }
 
   return (
-    <div className="flex items-center gap-2">
-      <label htmlFor="lang-select" className="text-sm font-medium">Language:</label>
-      <select 
-        id="lang-select"
-        onChange={handleLanguageChange}
-        defaultValue={pathname.split("/")[1]}
-        className="border rounded px-2 py-1 text-sm bg-white"
-      >
-        <option value="en">English (EN)</option>
-        <option value="bn">বাংলা (BN)</option>
-        <option value="hi">हिन्दी (HI)</option>
-        <option value="ar">العربية (AR)</option>
-        <option value="ja">日本語 (JA)</option>
-        <option value="ko">한국어 (KO)</option>
-        <option value="en-SG">English (SG)</option>
-      </select>
-    </div>
-  );
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="flex items-center gap-2 px-2 text-sm"
+          aria-label="Change language"
+        >
+          <Flag country={currentLanguage.country} />
+          <span>{currentLanguage.label}</span>
+          <ChevronDown className="h-3 w-3 opacity-70" />
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" className="min-w-44">
+        {languages.map((language) => (
+          <DropdownMenuItem
+            key={language.value}
+            onClick={() => handleLanguageChange(language.value)}
+            className="flex cursor-pointer items-center justify-between gap-3"
+          >
+            <span className="flex items-center gap-2">
+              <Flag country={language.country} />
+              {language.label}
+            </span>
+            {currentLocale === language.value && <Check className="h-4 w-4" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 }
