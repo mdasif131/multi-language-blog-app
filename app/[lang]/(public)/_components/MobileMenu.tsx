@@ -3,8 +3,7 @@ import { AlignLeft } from "lucide-react"
 import { useState } from "react"
 import SideMenu from "./Side.Menu"
 
-
-const MobileMenu = ({ lang }: { lang: string; }) => {
+const MobileMenu = ({ lang }: { lang: string }) => {
   const [isSidbarOpen, setIsSidbarOpen] = useState(false)
   return (
     <>

@@ -63,7 +63,7 @@ const SideMenu: React.FC<SidbarProps> = ({ isOpen, onClose,lang }) => {
             className={`text-sm font-medium transition-colors hover:text-emerald-600 ${
               pathname === link.href
                 ? "font-semibold text-emerald-600"
-                : "text-slate-600"
+                : ""
             }`}
           >
             {link.name}

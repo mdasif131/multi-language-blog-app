@@ -3,9 +3,10 @@
 import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import LanguageSwitcher from "./LanguageSwitcher"
-import { ModeToggle } from "./ThemeToggle"
+
+import { ModeToggle } from "../../../../components/ThemeToggle"
 import MobileMenu from "./MobileMenu"
+import LanguageSwitcher from "./LanguageSwitcher"
 
 export default function Navbar({ lang }: { lang: string }) {
   const pathname = usePathname()
@@ -31,9 +32,7 @@ export default function Navbar({ lang }: { lang: string }) {
               key={link.href}
               href={link.href}
               className={`text-sm font-medium transition-colors hover:text-emerald-600 ${
-                pathname === link.href
-                  ? "font-semibold text-emerald-600"
-                  : "text-slate-600"
+                pathname === link.href ? "font-semibold text-emerald-600" : ""
               }`}
             >
               {link.name}
@@ -44,7 +43,7 @@ export default function Navbar({ lang }: { lang: string }) {
         <div className="flex items-center gap-3">
           <ModeToggle />
           <LanguageSwitcher />
-          <MobileMenu lang={lang}/>
+          <MobileMenu lang={lang} />
         </div>
       </div>
     </header>
