@@ -4,9 +4,9 @@ import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { ModeToggle } from "../../../../components/ThemeToggle"
 import MobileMenu from "./MobileMenu"
 import LanguageSwitcher from "./LanguageSwitcher"
+import { ModeToggle } from "@/components/mode-toggle"
 
 export default function Navbar({ lang }: { lang: string }) {
   const pathname = usePathname()
