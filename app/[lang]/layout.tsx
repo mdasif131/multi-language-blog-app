@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { NextIntlClientProvider } from "next-intl"
 import { getMessages } from "next-intl/server"
 import "../globals.css"
+import { Toaster } from "@/components/ui/sonner"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -37,7 +38,10 @@ export default async function RootLayout({
     >
       <body>
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster position="bottom-center" />
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -7,39 +7,45 @@ import { usePathname } from "next/navigation"
 import { useOutsideClick } from "@/hooks/outSideClick"
 import { useTranslations } from "next-intl"
 
-interface SidbarProps {
+interface SidebarProps {
   isOpen: boolean
   onClose: () => void
   lang: string
 }
 
-const SideMenu: React.FC<SidbarProps> = ({ isOpen, onClose,lang }) => {
+const SideMenu = ({ isOpen, onClose, lang }: SidebarProps) => {
   const pathname = usePathname()
   const sidebarRef = useOutsideClick<HTMLDivElement>(onClose)
-  const t = useTranslations("nav"); 
+  const t = useTranslations("nav")
   const isRtl = lang === "ar"
-    
-   const navLinks = [
-     { name: t("health"), href: `/${lang}/category/health` },
-     { name: t("nutrition"), href: `/${lang}/category/nutrition` },
-     { name: t("sports"), href: `/${lang}/category/sports` },
-   ]
+
+  const navLinks = [
+    { name: t("health"), href: `/${lang}/category/health` },
+    { name: t("nutrition"), href: `/${lang}/category/nutrition` },
+    { name: t("sports"), href: `/${lang}/category/sports` },
+  ]
 
   return (
     <div
-      className={`fixed inset-y-0 z-50 h-screen w-full bg-black/50 text-white/70 shadow-xl ${
+      id="mobile-navigation-menu"
+      aria-hidden={!isOpen}
+      className={`fixed inset-y-0 z-50 h-dvh w-full bg-black/50 text-white/70 shadow-xl ${
         isRtl ? "right-0" : "left-0"
       } ${
-        isOpen ? "translate-x-0" : isRtl ? "translate-x-[110%]" : "translate-x-[-110%]"
-      }`}
+        isOpen
+          ? "pointer-events-auto translate-x-0"
+          : `pointer-events-none ${isRtl ? "translate-x-[110%]" : "translate-x-[-110%]"}`
+      } transition-transform duration-300 ease-in-out`}
+      onClick={onClose}
     >
       <div
         ref={sidebarRef}
-        className={`flex h-screen max-w-96 min-w-72 flex-col gap-6 bg-background p-10 max-sm:max-w-80 dark:bg-background ${
+        className={`flex h-dvh w-full min-w-0 max-w-sm flex-col gap-6 overflow-y-auto bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-[calc(env(safe-area-inset-bottom)+1.5rem)] dark:bg-background ${
           isRtl
             ? "ml-auto border-l border-l-border"
             : "border-r border-r-border"
         }`}
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-5">
           {/* Logo */}
@@ -50,7 +56,9 @@ const SideMenu: React.FC<SidbarProps> = ({ isOpen, onClose,lang }) => {
             HealthRemedy
           </Link>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Close navigation menu"
             className="hoverEffect cursor-pointer text-primary hover:text-primary/50"
           >
             <X />
@@ -60,6 +68,7 @@ const SideMenu: React.FC<SidbarProps> = ({ isOpen, onClose,lang }) => {
           <Link
             key={link.href}
             href={link.href}
+            onClick={onClose}
             className={`text-sm font-medium transition-colors hover:text-emerald-600 ${
               pathname === link.href
                 ? "font-semibold text-emerald-600"

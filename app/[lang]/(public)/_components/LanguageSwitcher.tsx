@@ -52,12 +52,14 @@ export default function LanguageSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="flex items-center gap-2 px-2 text-sm"
+          className="h-9 w-9 gap-1 px-1 sm:h-10 sm:w-auto sm:gap-2 sm:px-2"
           aria-label="Change language"
         >
           <Flag country={currentLanguage.country} />
-          <span>{currentLanguage.label}</span>
-          <ChevronDown className="h-3 w-3 opacity-70" />
+          <span className="sr-only sm:not-sr-only">
+            {currentLanguage.label}
+          </span>
+          <ChevronDown className="hidden h-3 w-3 opacity-70 sm:block" />
         </Button>
       </DropdownMenuTrigger>
 

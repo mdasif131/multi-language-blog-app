@@ -1,19 +1,30 @@
 "use client"
-import { AlignLeft } from "lucide-react"
+import { Menu } from "lucide-react"
 import { useState } from "react"
+import { Button } from "@/components/ui/button"
 import SideMenu from "./Side.Menu"
 
 const MobileMenu = ({ lang }: { lang: string }) => {
-  const [isSidbarOpen, setIsSidbarOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   return (
     <>
-      <button onClick={() => setIsSidbarOpen(!isSidbarOpen)}>
-        <AlignLeft className="hover:text-darkColor hoverEffect hover:cursor-pointer md:hidden" />
-      </button>
-      <div className="md:hidden">
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={
+          isSidebarOpen ? "Close navigation menu" : "Open navigation menu"
+        }
+        aria-expanded={isSidebarOpen}
+        aria-controls="mobile-navigation-menu"
+        className="lg:hidden"
+        onClick={() => setIsSidebarOpen((open) => !open)}
+      >
+        <Menu className="size-5" />
+      </Button>
+      <div className="lg:hidden">
         <SideMenu
-          isOpen={isSidbarOpen}
-          onClose={() => setIsSidbarOpen(false)}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
           lang={lang}
         />
       </div>
