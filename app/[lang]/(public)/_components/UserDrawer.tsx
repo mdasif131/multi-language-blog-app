@@ -153,8 +153,7 @@ export default function UserDrawer({ lang }: { lang: string }) {
           </DropdownMenuItem>
           <DropdownMenuSeparator className="my-2" />
           <DropdownMenuItem
-            variant="destructive"
-            className="h-12 gap-3 px-3 text-base"
+            className="h-12 gap-3 px-3 text-base text-destructive focus:text-destructive"
             disabled={authPending}
             onSelect={handleSignOut}
           >
