@@ -40,7 +40,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
             {children}
-            <Toaster position="bottom-center" />
+            <Toaster position="bottom-center" richColors />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
