@@ -184,3 +184,24 @@
 .hoverEffect {
   @apply transition-all duration-300 ease-in-out;
 }
+
+.rich-text-content h1 {
+  margin-block: 1.5rem;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 2.5rem;
+}
+
+.rich-text-content h2 {
+  margin-block: 1.25rem;
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 2.25rem;
+}
+
+.rich-text-content h3 {
+  margin-block: 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 2rem;
+}

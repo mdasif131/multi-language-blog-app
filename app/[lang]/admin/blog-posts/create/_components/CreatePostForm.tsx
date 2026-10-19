@@ -45,6 +45,7 @@ import {
 } from "@/lib/zodSchemas"
 import { createBlogPostAction, createCategoryAction } from "../actions"
 import { tryCatch } from "@/hooks/try-catch"
+import RichTextEditor from "@/components/rich-text-editor/Editor"
 
 type CategoryOption = {
   id: string
@@ -302,11 +303,7 @@ export default function CreatePostForm({
                     <FormItem>
                       <FormLabel>Full description</FormLabel>
                       <FormControl>
-                        <Textarea
-                          rows={8}
-                          placeholder="Write the full blog post content"
-                          {...field}
-                        />
+                        <RichTextEditor field={field}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
