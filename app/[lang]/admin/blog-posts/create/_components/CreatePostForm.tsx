@@ -46,6 +46,7 @@ import {
 import { createBlogPostAction, createCategoryAction } from "../actions"
 import { tryCatch } from "@/hooks/try-catch"
 import RichTextEditor from "@/components/rich-text-editor/Editor"
+import Uploader from "@/components/file-uploader.tsx/Uploader"
 
 type CategoryOption = {
   id: string
@@ -303,7 +304,7 @@ export default function CreatePostForm({
                     <FormItem>
                       <FormLabel>Full description</FormLabel>
                       <FormControl>
-                        <RichTextEditor field={field}/>
+                        <RichTextEditor field={field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -315,11 +316,12 @@ export default function CreatePostForm({
                   name="fileKey"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cover image file key</FormLabel>
+                      <FormLabel>Thumbnail Image</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="uploads/cover-image.webp"
-                          {...field}
+                        <Uploader
+                          onChange={field.onChange}
+                          value={field.value || ""}
+                          fileTypeAccepted="image"
                         />
                       </FormControl>
                       <FormMessage />

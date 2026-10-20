@@ -1,7 +1,8 @@
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { prisma } from "./db";
-import { env } from "./env";
+import "server-only"
+import { betterAuth } from "better-auth"
+import { prismaAdapter } from "better-auth/adapters/prisma"
+import { prisma } from "./db"
+import { env } from "./env"
 
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
@@ -15,4 +16,4 @@ export const auth = betterAuth({
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
-});
+})
