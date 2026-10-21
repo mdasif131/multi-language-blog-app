@@ -1,27 +1,29 @@
 # 🌍 Multi-Lingual Health & Wellness Blog
 
-A high-performance, multi-language health-focused blog platform built with Next.js 16, designed to deliver health, nutrition, and sports articles globally with automated push notifications and Google AdSense optimization.
+A high-performance, multi-language health-focused blog platform built with modern web technologies, designed to deliver health, nutrition, and sports articles globally.
 
 ---
 
 ## 🚀 Tech Stack
 
-* **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
+* **Framework:** [Next.js](https://nextjs.org/) (App Router)
 * **Database & ORM:** [Neon DB](https://neon.tech/) (Serverless PostgreSQL) + [Prisma ORM](https://www.prisma.io/)
 * **Authentication:** [Better Auth](https://better-auth.com/) (Google & Facebook Social Login)
-* **Storage:** Cloudflare Tigris (S3-compatible object storage)
-* **Internationalization:** `next-intl` (Localized routing & dynamic translations)
-* **Notifications:** Firebase Cloud Messaging (FCM) for targeted push notifications
-* **Styling & Validation:** Tailwind CSS, Zod
+* **Security & Rate Limiting:** [Arcjet](https://arcjet.com/) (Bot protection, rate limiting, and attack prevention)
+* **Storage:** Cloudflare Tigris (S3-compatible object storage for media uploads)
+* **Internationalization:** `next-intl` (Static translations & localized routing for 7 languages)
+* **Notifications:** Firebase Cloud Messaging (FCM) for real-time push notifications
+* **Styling:** Tailwind CSS & Shadcn UI components
+* **Validation:** Zod
 
 ---
 
-## 🌐 Supported Locales (`7 Languages`)
+## 🌐 Supported Languages (`7 Locales`)
 
 1. English (`en`)
 2. Bengali (`bn`)
 3. Hindi (`hi`)
-4. Arabic (`ar` - RTL layout support)
+4. Arabic (`ar` - RTL Support)
 5. Japanese (`ja`)
 6. Korean (`ko`)
 7. Singapore English (`en-SG`)
@@ -30,16 +32,17 @@ A high-performance, multi-language health-focused blog platform built with Next.
 
 ## ✨ Key Features
 
-* **Localized URL Routing:** SEO-optimized locale prefixing (`/en`, `/bn`, `/ar`, etc.).
-* **Category Management:** Dynamic creation and localization for categories like **Health**, **Nutrition**, and **Sports**.
-* **Automated FCM Push Notifications:** Instant browser alerts dispatched automatically to language-specific subscribers whenever a new post is published.
-* **Admin Portal:** Secure dashboard to manage posts, categories, and automated slug generation.
-* **Google AdSense Ready:** Pre-built placeholders and essential policy pages (Privacy Policy, Contact Us, Terms/About).
+* **Multi-Language Routing:** Dynamic SEO-friendly localized URLs (`/en`, `/bn`, `/ar`, etc.).
+* **Category Navigation:** Structured browsing across **Health**, **Nutrition**, and **Sports**.
+* **Advanced Security & Protection:** Powered by **Arcjet** for robust rate limiting, bot detection, and safeguarding API endpoints/Server Actions against abuse.
+* **Push Notifications:** Instant subscriber alerts via Firebase Cloud Messaging (FCM) when new articles are published.
+* **Admin Dashboard:** Secure interface to create and manage categories and blog posts with automatic slug generation.
+* **AdSense Ready:** Optimized layout for Google AdSense monetization.
+* **Secure Authentication:** Social logins integrated seamlessly using Better Auth.
 
 ---
 
 ## 📂 Project Directory Structure
-
 ```text
 ├── app/
 │   ├── [lang]/              # Localized App Router pages
@@ -50,12 +53,11 @@ A high-performance, multi-language health-focused blog platform built with Next.
 │   │   └── page.tsx         # Landing page
 │   └── api/                 # API endpoints & Better Auth routes
 ├── components/              # UI components
-├── lib/                     # Firebase, Prisma, and utility clients
+├── lib/                     # Prisma, Firebase, Arcjet & utility functions
 ├── messages/                # Translation files (en.json, bn.json, etc.)
 ├── prisma/                  # Prisma schema models
 └── public/                  # Service worker (sw.js) & static assets
 ```
-
 ---
 
 ## 📜 License
