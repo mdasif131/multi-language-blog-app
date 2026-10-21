@@ -1,4 +1,5 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { NextResponse } from "next/server"
 import { Readable } from "node:stream"
 import { v4 as uuidv4 } from "uuid"
@@ -6,6 +7,8 @@ import { z } from "zod"
 
 import { env } from "@/lib/env"
 import { S3 } from "@/lib/s3Client"
+import arcjet, { fixedWindow } from "@/lib/arcjet"
+import { requireAdmin } from "@/app/data/admin/require-admin"
 
 export const runtime = "nodejs"
 
@@ -15,13 +18,22 @@ const uploadMetadataSchema = z.object({
   fileType: z.enum(["image", "video"]),
   size: z.coerce.number().int().positive(),
 })
-
+const aj = arcjet.withRule(
+  fixedWindow({
+    mode: "LIVE",
+    window: "1m",
+    max: 5,
+  })
+)
 const maxUploadSize = {
   image: 5 * 1024 * 1024,
   video: 500 * 1024 * 1024,
 } as const
 
-function makeCheckedBody(body: ReadableStream<Uint8Array>, expectedSize: number) {
+function makeCheckedBody(
+  body: ReadableStream<Uint8Array>,
+  expectedSize: number
+) {
   async function* chunks() {
     const reader = body.getReader()
     let bytesRead = 0
@@ -51,13 +63,20 @@ function makeCheckedBody(body: ReadableStream<Uint8Array>, expectedSize: number)
 }
 
 export async function PUT(request: Request) {
+  const session = await requireAdmin()
   let fileName: string
   try {
     fileName = decodeURIComponent(request.headers.get("x-file-name") ?? "")
   } catch {
     return NextResponse.json({ error: "Invalid file name" }, { status: 400 })
   }
-
+  const decision = await aj.protect(request, { fingerprint: session?.user.id as string })
+  if (decision.isDenied()) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 }
+    )
+  }
   const parsedMetadata = uploadMetadataSchema.safeParse({
     fileName,
     contentType: request.headers.get("content-type"),
@@ -66,10 +85,18 @@ export async function PUT(request: Request) {
   })
 
   if (!parsedMetadata.success) {
-    return NextResponse.json({ error: "Invalid upload metadata" }, { status: 400 })
+    return NextResponse.json(
+      { error: "Invalid upload metadata" },
+      { status: 400 }
+    )
   }
 
-  const { fileName: metadataFileName, contentType, fileType, size } = parsedMetadata.data
+  const {
+    fileName: metadataFileName,
+    contentType,
+    fileType,
+    size,
+  } = parsedMetadata.data
   const safeFileName = metadataFileName.replace(/[\\/\u0000-\u001f]/g, "_")
 
   if (
@@ -83,27 +110,32 @@ export async function PUT(request: Request) {
   }
 
   if (size > maxUploadSize[fileType]) {
-    return NextResponse.json({ error: "The file is too large" }, { status: 413 })
+    return NextResponse.json(
+      { error: "The file is too large" },
+      { status: 413 }
+    )
   }
 
   if (!request.body) {
-    return NextResponse.json({ error: "The upload body is empty" }, { status: 400 })
+    return NextResponse.json(
+      { error: "The upload body is empty" },
+      { status: 400 }
+    )
   }
 
   const key = `${uuidv4()}-${safeFileName}`
 
   try {
-    await S3.send(
-      new PutObjectCommand({
-        Bucket: env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES,
-        Key: key,
-        ContentType: contentType,
-        ContentLength: size,
-        Body: makeCheckedBody(request.body, size),
-      })
-    )
+    const command = new PutObjectCommand({
+      Bucket: env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES,
+      Key: key,
+      ContentType: contentType,
+      ContentLength: size,
+      Body: makeCheckedBody(request.body, size),
+    })
 
-    return NextResponse.json({ key })
+    const presignedUrl = await getSignedUrl(S3, command)
+    return NextResponse.json({ presignedUrl, key })
   } catch (error) {
     console.error("Failed to upload file to S3-compatible storage", error)
     const errorCode = error instanceof Error ? error.name : "UnknownError"
@@ -111,9 +143,6 @@ export async function PUT(request: Request) {
       errorCode === "SignatureDoesNotMatch"
         ? "Tigris rejected the access key and secret key. Check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in .env."
         : `Storage upload failed (${errorCode})`
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 502 }
-    )
+    return NextResponse.json({ error: errorMessage }, { status: 502 })
   }
 }

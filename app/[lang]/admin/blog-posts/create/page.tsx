@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db"
 import CreatePostForm from "./_components/CreatePostForm"
+import { adminGetCategories } from "@/app/data/admin/admin-get-categories"
+
 
 export default async function CreateBlogPostPage({
   params,
@@ -7,10 +9,6 @@ export default async function CreateBlogPostPage({
   params: Promise<{ lang: string }>
 }) {
   const { lang } = await params
-  const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
-    select: { id: true, name: true, slug: true },
-  })
-
+  const categories = await adminGetCategories();
   return <CreatePostForm categories={categories} lang={lang} />
 }

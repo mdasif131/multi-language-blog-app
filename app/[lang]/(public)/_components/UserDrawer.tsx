@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { authClient } from "@/lib/auth-client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useSignOut } from "@/hooks/use-signout"
 
 function GoogleIcon() {
   return (
@@ -69,7 +70,7 @@ export default function UserDrawer({ lang }: { lang: string }) {
       .map((part) => part[0])
       .join("")
       .toUpperCase() || email.slice(0, 2).toUpperCase() || "U"
-  const displayName = name.split(/\s+/)[0] || email.split("@")[0] || "Account"
+  // const displayName = name.split(/\s+/)[0] || email.split("@")[0] || "Account"
 
   const handleGoogleSignIn = () => {
     startAuthTransition(async () => {
@@ -88,22 +89,7 @@ export default function UserDrawer({ lang }: { lang: string }) {
     })
   }
 
-  const handleSignOut = () => {
-    startAuthTransition(async () => {
-      try {
-        const { error } = await authClient.signOut()
-        if (error) {
-          toast.error(error.message || "Could not sign out")
-          return
-        }
-        toast.success("Signed out successfully")
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Could not sign out"
-        )
-      }
-    })
-  }
+  const handleSignOut = useSignOut()
 
   if (sessionPending && !session) {
     return (

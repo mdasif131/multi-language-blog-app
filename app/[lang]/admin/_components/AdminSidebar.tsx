@@ -69,7 +69,7 @@ export function AppSidebar({ lang, ...props }: AppSidebarProps) {
           <NavMain items={navMain} />
         </SidebarContent>
         <SidebarFooter>
-          <NavUser user={data.user} />
+          <NavUser  />
         </SidebarFooter>
       </Sidebar>
     </TooltipProvider>

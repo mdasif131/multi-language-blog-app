@@ -46,23 +46,20 @@ import {
 import { createBlogPostAction, createCategoryAction } from "../actions"
 import { tryCatch } from "@/hooks/try-catch"
 import RichTextEditor from "@/components/rich-text-editor/Editor"
-import Uploader from "@/components/file-uploader.tsx/Uploader"
 
-type CategoryOption = {
-  id: string
-  name: string
-  slug: string
-}
+import { AdminGetCategoryType } from "@/app/data/admin/admin-get-categories"
+import Uploader from "@/components/file-uploader/Uploader"
 
 export default function CreatePostForm({
   categories,
   lang,
 }: {
-  categories: CategoryOption[]
+  categories: AdminGetCategoryType[]
   lang: string
 }) {
   const router = useRouter()
   const [categoryOptions, setCategoryOptions] = useState(categories)
+
   const language = blogLanguages.includes(lang as BlogLanguage)
     ? (lang as BlogLanguage)
     : "en"
@@ -100,18 +97,21 @@ export default function CreatePostForm({
     }
 
     setCategoryOptions((current) =>
-      [...current.filter((category) => category.id !== result.category.id), result.category].sort(
-        (a, b) => a.name.localeCompare(b.name),
-      ),
+      [
+        ...current.filter((category) => category.id !== result.category.id),
+        result.category,
+      ].sort((a, b) => a.name.localeCompare(b.name))
     )
-    blogForm.setValue("categoryId", result.category.id, { shouldValidate: true })
+    blogForm.setValue("categoryId", result.category.id, {
+      shouldValidate: true,
+    })
     categoryForm.reset()
     router.refresh()
     toast.success(result.message)
   }
 
   async function onCreatePost(values: BlogPostSchemaType) {
-    const {data:result, error} = await tryCatch(createBlogPostAction(values))
+    const { data: result, error } = await tryCatch(createBlogPostAction(values))
     if (error) {
       toast.error("An unexpected error occurred. Please try again")
       return
@@ -122,7 +122,6 @@ export default function CreatePostForm({
     } else if (result.status === "error") {
       toast.error(result.message)
     }
-
   }
 
   return (
@@ -201,21 +200,29 @@ export default function CreatePostForm({
                   </Button>
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={categoryForm.formState.isSubmitting}
-                >
-                  {categoryForm.formState.isSubmitting ? (
-                    <>
-                      Createing... <Loader className="ml-1 animate-spin" />
-                    </>
-                  ) : (
-                    <>
-                      Create Course <PlusIcon size={16} />
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-3 md:gap-4">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={categoryForm.formState.isSubmitting}
+                  >
+                    {categoryForm.formState.isSubmitting ? (
+                      <>
+                        Createing... <Loader className="ml-1 animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        Create Course <PlusIcon size={16} />
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant={"outline"}
+                    onClick={() => categoryForm.reset()}
+                  >
+                    Reset
+                  </Button>
+                </div>
               </form>
             </Form>
           </CardContent>
@@ -419,21 +426,29 @@ export default function CreatePostForm({
                   />
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={blogForm.formState.isSubmitting}
-                >
-                  {blogForm.formState.isSubmitting ? (
-                    <>
-                      Createing... <Loader className="ml-1 animate-spin" />
-                    </>
-                  ) : (
-                    <>
-                      Create blog post <PlusIcon size={16} />
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-3 md:gap-4">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={blogForm.formState.isSubmitting}
+                  >
+                    {blogForm.formState.isSubmitting ? (
+                      <>
+                        Createing... <Loader className="ml-1 animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        Create blog post <PlusIcon size={16} />
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant={"outline"}
+                    onClick={() => blogForm.reset()}
+                  >
+                    Reset
+                  </Button>
+                </div>
               </form>
             </Form>
           </CardContent>
