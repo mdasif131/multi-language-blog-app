@@ -6,6 +6,7 @@ import {
   CircleUserRound,
   LoaderIcon,
   LogOut,
+  ShieldCheck,
   User2,
   X,
 } from "lucide-react"
@@ -62,6 +63,7 @@ export default function UserDrawer({ lang }: { lang: string }) {
   const name = session?.user.name?.trim() ?? ""
   const email = session?.user.email ?? ""
   const image = session?.user.image
+  const isAdmin= session?.user.role === "admin"
   const initials =
     name
       .split(/\s+/)
@@ -123,7 +125,7 @@ export default function UserDrawer({ lang }: { lang: string }) {
 
         <DropdownMenuContent
           align={isRtl ? "start" : "end"}
-          className="w-72 rounded-3xl p-3"
+          className="w-72 rounded-xl p-3"
         >
           <DropdownMenuItem asChild className="h-12 gap-3 px-3 text-base">
             <Link href={`/${lang}/saved`}>
@@ -137,6 +139,14 @@ export default function UserDrawer({ lang }: { lang: string }) {
               <span>Account</span>
             </Link>
           </DropdownMenuItem>
+          {isAdmin && (
+            <DropdownMenuItem asChild className="h-12 gap-3 px-3 text-primary font-semibold">
+              <Link href={`/${lang}/admin`}>
+                <ShieldCheck className="size-5" />
+                <span >Admin Pannal</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator className="my-2" />
           <DropdownMenuItem
             className="h-12 gap-3 px-3 text-base text-destructive focus:text-destructive"

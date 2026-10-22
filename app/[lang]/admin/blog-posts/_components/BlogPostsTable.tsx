@@ -7,7 +7,8 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table"
-import { Eye, MoreHorizontal } from "lucide-react"
+import { Delete, Eye, MoreHorizontal, SquarePen } from "lucide-react"
+import { useState } from "react"
 
 import type { AdminBlogPost } from "@/app/data/admin/admin-get-blog-posts"
 import { Badge } from "@/components/ui/badge"
@@ -27,6 +28,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useConstructUrl } from "@/hooks/use-construct-url"
+import Link from "next/link"
+import { useParams } from "next/navigation"
 
 function PostThumbnail({ post }: { post: AdminBlogPost }) {
   return (
@@ -55,33 +58,62 @@ function statusStyle(status: string) {
 function PostActions({
   post,
   onPreview,
+  onDelete,
 }: {
   post: AdminBlogPost
   onPreview: (post: AdminBlogPost) => void
+  onDelete: (post: AdminBlogPost) => void
 }) {
+  const { lang } = useParams<{ lang: string }>()
+  const [menuOpen, setMenuOpen] = useState(false)
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`Actions for ${post.title}`}>
-          <MoreHorizontal className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={() => onPreview(post)}>
-          <Eye className="size-4" />
-          Preview
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`Actions for ${post.title}`}
+          >
+            <MoreHorizontal className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => onPreview(post)}>
+            <Eye className="size-4" />
+            Preview
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`/${lang}/admin/blog-posts/${post.id}/edit`}>
+              <SquarePen className="size-4" />
+              Edit
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onSelect={() => {
+              setMenuOpen(false)
+              window.setTimeout(() => onDelete(post), 0)
+            }}
+          >
+            <Delete className="size-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   )
 }
 
 export function BlogPostsTable({
   posts,
   onPreview,
+  onDelete,
 }: {
   posts: AdminBlogPost[]
   onPreview: (post: AdminBlogPost) => void
+  onDelete: (post: AdminBlogPost) => void
 }) {
 
 
@@ -131,7 +163,11 @@ export function BlogPostsTable({
       id: "actions",
       header: "Action",
       cell: ({ row }) => (
-        <PostActions post={row.original} onPreview={onPreview} />
+        <PostActions
+          post={row.original}
+          onPreview={onPreview}
+          onDelete={onDelete}
+        />
       ),
     },
   ]

@@ -10,11 +10,15 @@ import {
   Search,
   X,
   FileText,
+  SquarePen,
+  Delete,
 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
+import { toast } from "sonner"
 
 import type { AdminGetCategoryType } from "@/app/data/admin/admin-get-categories"
 import type { AdminBlogPost } from "@/app/data/admin/admin-get-blog-posts"
+import { deleteBlogPost } from "../action"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,6 +38,9 @@ import {
 import { useConstructUrl } from "@/hooks/use-construct-url"
 import { BlogPostsTable } from "./BlogPostsTable"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import Link from "next/link"
+import { useParams } from "next/navigation"
+import DeleteBlogDialog from "./DeleteBlogDialog"
 
 type BlogPostsResponse = {
   data: AdminBlogPost[]
@@ -69,36 +76,61 @@ function statusStyle(status: string) {
 function PostActions({
   post,
   onPreview,
+  onDelete,
 }: {
   post: AdminBlogPost
   onPreview: (post: AdminBlogPost) => void
+  onDelete: (post: AdminBlogPost) => void
 }) {
+  const { lang } = useParams<{ lang: string }>()
+  const [menuOpen, setMenuOpen] = useState(false)
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={`Actions for ${post.title}`}
-        >
-          <MoreHorizontal className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={() => onPreview(post)}>
-          Preview
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label={`Actions for ${post.title}`}
+          >
+            <MoreHorizontal className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => onPreview(post)}>
+            Preview
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`/${lang}/admin/blog-posts/${post.id}/edit`}>
+              <SquarePen className="size-4" />
+              Edit
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onSelect={() => {
+              setMenuOpen(false)
+              window.setTimeout(() => onDelete(post), 0)
+            }}
+          >
+            <Delete className="size-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   )
 }
 
 function BlogPostCard({
   post,
   onPreview,
+  onDelete,
 }: {
   post: AdminBlogPost
   onPreview: (post: AdminBlogPost) => void
+  onDelete: (post: AdminBlogPost) => void
 }) {
   const imageUrl = useConstructUrl(post.fileKey)
 
@@ -106,14 +138,18 @@ function BlogPostCard({
     <article className="overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md">
       <div className="relative h-48 bg-muted">
         <Image
-          src={imageUrl}
+          src={imageUrl || ""}
           alt={post.title}
           fill
           unoptimized
           className="object-cover"
         />
         <div className="absolute right-2 top-2">
-          <PostActions post={post} onPreview={onPreview} />
+          <PostActions
+            post={post}
+            onPreview={onPreview}
+            onDelete={onDelete}
+          />
         </div>
       </div>
       <div className="space-y-3 p-4">
@@ -225,6 +261,43 @@ export default function BlogPostsClient({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [previewPost, setPreviewPost] = useState<AdminBlogPost | null>(null)
+  const [deletePost, setDeletePost] = useState<AdminBlogPost | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const { lang } = useParams<{ lang: string }>()
+
+  const requestDelete = useCallback((post: AdminBlogPost) => {
+    setDeletePost(post)
+    setDeleteDialogOpen(true)
+  }, [])
+
+  const handleDelete = useCallback(
+    async (postId: string) => {
+      const response = await deleteBlogPost(postId, lang)
+      if (response.status !== "success") {
+        throw new Error(response.message)
+      }
+
+      const nextPage =
+        result.data.length === 1 && result.page > 1
+          ? result.page - 1
+          : result.page
+      setResult((current) => {
+        const data = current.data.filter((post) => post.id !== postId)
+        const total = Math.max(current.total - 1, 0)
+        return {
+          ...current,
+          data,
+          total,
+          page: nextPage,
+          totalPages: Math.ceil(total / current.pageSize),
+        }
+      })
+      if (nextPage !== result.page) setPage(nextPage)
+
+      toast.success(response.message)
+    },
+    [lang, result.data.length, result.page]
+  )
 
   useEffect(() => {
     const controller = new AbortController()
@@ -283,99 +356,7 @@ export default function BlogPostsClient({
   const lastItem = Math.min(result.page * pageSize, result.total)
 
   return (
-    <section className="space-y-5">
-      {/* <Card>
-        <CardHeader>
-          <h1 className="text-2xl font-semibold tracking-tight">Blog posts</h1>
-          <p className="text-sm text-muted-foreground">Manage your content</p>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <label className="flex flex-col gap-1.5 text-sm ">
-              <span className="font-medium">Per page</span>
-              <Select
-                value={String(pageSize)}
-                onValueChange={(value) => {
-                  setPageSize(Number(value))
-                  setPage(1)
-                }}
-              >
-                <SelectTrigger aria-label="Items per page">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[5, 10, 20, 50, 100].map((size) => (
-                    <SelectItem key={size} value={String(size)}>
-                      {size} items
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm w-full">
-              <span className="font-medium">Search posts</span>
-              <span className="relative">
-                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={search}
-                  onChange={(event) => {
-                    setSearch(event.target.value)
-                    setPage(1)
-                  }}
-                  placeholder="Search title or description..."
-                  className="pl-9"
-                  aria-label="Search by title or description"
-                />
-              </span>
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm ">
-              <span className="font-medium">Language</span>
-              <Select
-                value={language}
-                onValueChange={(value) => {
-                  setLanguage(value)
-                  setPage(1)
-                }}
-              >
-                <SelectTrigger aria-label="Filter by language">
-                  <SelectValue placeholder="Select language" />
-                </SelectTrigger>
-                <SelectContent>
-                  {languageOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm max-w-64">
-              <span className="font-medium">Category</span>
-              <Select
-                value={categoryId}
-                onValueChange={(value) => {
-                  setCategoryId(value)
-                  setPage(1)
-                }}
-              >
-                <SelectTrigger aria-label="Filter by category">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
-          </div>
-        </CardContent>
-      </Card> */}
-      {/*  */}
-      
+    <section className="space-y-5"> 
       <Card className="overflow-hidden rounded-xl  border-border/70 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 border-b bg-muted/20 px-5 py-5 sm:px-6">
           <div className="space-y-1">
@@ -534,7 +515,11 @@ export default function BlogPostsClient({
             </div>
           )}
           {view === "table" ? (
-            <BlogPostsTable posts={result.data} onPreview={setPreviewPost} />
+            <BlogPostsTable
+              posts={result.data}
+              onPreview={setPreviewPost}
+              onDelete={requestDelete}
+            />
           ) : result.data.length ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {result.data.map((post) => (
@@ -542,6 +527,7 @@ export default function BlogPostsClient({
                   key={post.id}
                   post={post}
                   onPreview={setPreviewPost}
+                  onDelete={requestDelete}
                 />
               ))}
             </div>
@@ -578,6 +564,17 @@ export default function BlogPostsClient({
         )}
       </div>
       {previewPost && <PostPreview post={previewPost} onClose={closePreview} />}
+      <DeleteBlogDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open)
+          if (!open) setDeletePost(null)
+        }}
+        postTitle={deletePost?.title ?? ""}
+        onDelete={async () => {
+          if (deletePost) await handleDelete(deletePost.id)
+        }}
+      />
     </section>
   )
 }

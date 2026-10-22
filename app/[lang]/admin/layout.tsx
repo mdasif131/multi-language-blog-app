@@ -9,11 +9,13 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
   params: Promise<{ lang: string }>
-  }) {
-   const { lang } = await params
-  
+}) {
+  const { lang } = await params
+  const direction = lang === "ar" ? "rtl" : "ltr"
+
   return (
     <SidebarProvider
+      dir={direction}
       style={
         {
           "--sidebar-width": "calc(var(--spacing) * 72)",
@@ -21,7 +23,12 @@ export default async function AdminLayout({
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" lang={lang} />
+      <AppSidebar
+        variant="inset"
+        side={direction === "rtl" ? "right" : "left"}
+        dir={direction}
+        lang={lang}
+      />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
