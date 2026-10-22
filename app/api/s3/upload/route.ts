@@ -1,5 +1,4 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3"
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { NextResponse } from "next/server"
 import { Readable } from "node:stream"
 import { v4 as uuidv4 } from "uuid"
@@ -134,8 +133,8 @@ export async function PUT(request: Request) {
       Body: makeCheckedBody(request.body, size),
     })
 
-    const presignedUrl = await getSignedUrl(S3, command)
-    return NextResponse.json({ presignedUrl, key })
+    await S3.send(command)
+    return NextResponse.json({ key })
   } catch (error) {
     console.error("Failed to upload file to S3-compatible storage", error)
     const errorCode = error instanceof Error ? error.name : "UnknownError"

@@ -1,9 +1,7 @@
-import React from 'react'
+import { adminGetCategories } from "@/app/data/admin/admin-get-categories"
+import BlogPostsClient from "./_components/BlogPostsClient"
 
-const BlogPosts = () => {
-  return (
-    <div>BlogPosts</div>
-  )
+export default async function BlogPostsPage() {
+  const categories = await adminGetCategories()
+  return <BlogPostsClient categories={categories} />
 }
-
-export default BlogPosts
